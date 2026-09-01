@@ -97,6 +97,64 @@ Unlike MovieLens, RetailRocket provides **implicit user feedback**, making it su
 
 ---
 
+## Phase 1 — Implicit Feedback
+
+The first phase focuses on building a classical collaborative filtering baseline for implicit-feedback recommendation.
+
+### Interaction Processing
+
+Raw user events are aggregated into user-item interactions.
+
+Multiple interactions between the same user and item are combined into a single interaction with an aggregated confidence weight.
+
+Global user and item indices are created to efficiently represent the interaction data as a sparse matrix.
+
+### Implicit ALS
+
+An **Alternating Least Squares (ALS)** model is used as the first collaborative filtering baseline.
+
+The model learns latent representations for users and items based on implicit interactions rather than explicit ratings.
+
+Previously observed items are excluded from the recommendation list during evaluation.
+
+### Temporal Evaluation
+
+The model is evaluated using a temporal train/test split.
+
+The evaluation consists of **10 consecutive one-day test windows**:
+
+- training data contains interactions observed before the test period
+- test data contains interactions from the following day
+- users and items not observed during training are excluded from evaluation
+
+This setup better reflects the real recommendation scenario where the model predicts future user interactions.
+
+### Evaluation Metrics
+
+The recommendation quality is evaluated using:
+
+- **Precision@10** — fraction of recommended items that are relevant
+- **Recall@10** — fraction of relevant items that were successfully recommended
+- **NDCG@10** — ranking quality with higher importance assigned to relevant items appearing near the top
+- **Hit Rate@10** — fraction of users for whom at least one relevant item appears in the Top-10 recommendations
+
+### Baseline Results
+
+Average results across 10 temporal evaluation windows:
+
+| Metric | Score |
+|---|---:|
+| Precision@10 | 0.49% |
+| Recall@10 | 3.09% |
+| NDCG@10 | 2.16% |
+| Hit Rate@10 | 4.16% |
+
+The results are treated as a **baseline** for subsequent experiments.
+
+The relatively low ranking metrics indicate that the basic ALS model has limited ability to predict the items users will interact with during the following day. This provides a reference point for evaluating more advanced retrieval and ranking approaches in later phases.
+
+---
+
 ## Setup
 
 Create a virtual environment
@@ -122,4 +180,8 @@ jupyter notebook
 
 ## Goal
 
-The objective of this project is to reproduce the architecture of modern industrial recommender systems and gain practical experience with algorithms commonly used in companies.# advanced-recommender-systems
+The objective of this project is to reproduce the architecture of modern industrial recommender systems and gain practical experience with algorithms commonly used in real-world recommendation pipelines.
+
+The project progressively moves from classical collaborative filtering to:
+
+Collaborative Filtering → Pairwise Learning → Candidate Generation → Neural Retrieval → Ranking → Production Pipeline
