@@ -8,7 +8,7 @@ The project is built around the RetailRocket dataset and gradually evolves from 
 
 ## Project Structure
 
-```
+```text
 advanced-recommender-systems/
 │
 ├── data/
@@ -52,6 +52,7 @@ The dataset includes:
 Unlike MovieLens, RetailRocket provides **implicit user feedback**, making it suitable for building production-style recommender systems.
 
 ---
+
 ## Project Roadmap
 
 The project follows a gradual progression from classical recommendation models to a modern industrial recommendation pipeline.
@@ -82,6 +83,7 @@ The project follows a gradual progression from classical recommendation models t
 ### Phase 4 — Item-Based Collaborative Filtering
 
 - Item-item similarity
+- Cosine similarity
 - Similarity-based recommendation
 - User history aggregation
 - Offline evaluation
@@ -192,8 +194,6 @@ Average results across 10 temporal evaluation windows:
 
 The baseline provides a simple reference point for evaluating more advanced collaborative filtering models.
 
-The relatively low performance demonstrates the limitation of popularity-based recommendation and motivates the use of personalized collaborative filtering.
-
 ---
 
 ## Phase 3 — Implicit ALS
@@ -223,24 +223,15 @@ Previously observed items are excluded from the recommendation list during evalu
 
 ### Temporal Evaluation
 
-The model is evaluated using a temporal train/test split.
+The model is evaluated using a temporal train/test split consisting of **10 consecutive one-day test windows**.
 
-The evaluation consists of **10 consecutive one-day test windows**:
+For each window:
 
 - training data contains interactions observed before the test period
 - test data contains interactions from the following day
 - users and items not observed during training are excluded from evaluation
 
 This setup better reflects the real recommendation scenario where the model predicts future user interactions.
-
-### Evaluation Metrics
-
-The recommendation quality is evaluated using:
-
-- **Precision@10** — fraction of recommended items that are relevant
-- **Recall@10** — fraction of relevant items that were successfully recommended
-- **NDCG@10** — ranking quality with higher importance assigned to relevant items appearing near the top
-- **Hit Rate@10** — fraction of users for whom at least one relevant item appears in the Top-10 recommendations
 
 ### ALS Results
 
@@ -255,23 +246,44 @@ Average results across 10 temporal evaluation windows:
 
 ALS substantially outperforms the simple baseline on all reported ranking metrics.
 
-This demonstrates the benefit of modeling user-item interactions with latent representations rather than relying primarily on item popularity.
-
 ---
 
 ## Phase 4 — Item-Based Collaborative Filtering
 
 The fourth phase explores **Item-Based Collaborative Filtering**.
 
-Instead of learning latent representations for users and items, the model uses item-to-item similarity derived from user interaction patterns.
+Instead of learning latent representations for users and items, the model builds explicit item-to-item similarities from user interaction patterns.
 
-The recommendation process consists of:
+For a user $u$ and candidate item $j$, the recommendation score is:
 
-1. identifying items the user has interacted with
-2. finding similar items
-3. aggregating item similarities to produce personalized recommendations
+$$
+score(u,j) =
+\sum_{i \in H_u}
+w_{ui} \cdot sim(i,j)
+$$
+
+where:
+
+- $H_u$ is the user's interaction history
+- $w_{ui}$ is the strength of the user's interaction with item $i$
+- $sim(i,j)$ is the cosine similarity between items
 
 The same temporal evaluation procedure and Top-K metrics are used to make the results directly comparable with the previous models.
+
+### Item-Based CF Results
+
+Average results across 10 temporal evaluation windows:
+
+| Metric | Score |
+|---|---:|
+| Precision@10 | 0.43% |
+| Recall@10 | 3.21% |
+| NDCG@10 | 2.01% |
+| Hit Rate@10 | 3.98% |
+
+Item-Based CF substantially outperforms the simple baseline and achieves performance close to ALS.
+
+Compared with ALS, Item-Based CF has slightly higher Recall@10, while ALS performs slightly better on Precision@10, NDCG@10, and Hit Rate@10.
 
 ---
 
@@ -350,6 +362,7 @@ Candidate Retrieval
 Ranking
       ↓
 Top-K Recommendations
+```
 
 ---
 
@@ -372,20 +385,20 @@ The evaluation uses future interactions from the test period as relevant items, 
 
 ## Setup
 
-Create a virtual environment
+Create a virtual environment:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Install dependencies
+Install dependencies:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-Launch Jupyter
+Launch Jupyter:
 
 ```bash
 jupyter notebook
@@ -399,4 +412,4 @@ The objective of this project is to reproduce the architecture of modern industr
 
 The project progressively moves from:
 
-Exploratory Analysis → Baseline → ALS → Item-Based Collaborative Filtering → Pairwise Ranking → Retrieval → Neural Retrieval → Ranking → Industrial Recommendation Pipeline
+**Exploratory Analysis → Baseline → ALS → Item-Based Collaborative Filtering → Pairwise Ranking → Retrieval → Neural Retrieval → Ranking → Industrial Recommendation Pipeline**
